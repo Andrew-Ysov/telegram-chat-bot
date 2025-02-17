@@ -8,7 +8,8 @@ def create_users_table():
     conn = sqlite3.connect('data_for_bot.db')
     cursor = conn.cursor()
     cursor.execute('''CREATE TABLE IF NOT EXISTS users 
-                   (id INTEGER PRIMARY KEY AUTOINCREMENT, login int, password text)''')
+                   (id INTEGER PRIMARY KEY AUTOINCREMENT, 
+                   login int, password text)''')
     conn.commit()
     cursor.close()
     conn.close()
@@ -20,8 +21,8 @@ def is_login_in_use(login):
     conn = sqlite3.connect('data_for_bot.db')
     cursor = conn.cursor()
 
-    result = cursor.execute(f'''SELECT {login} FROM users 
-                            WHERE login = (:phone_num)''', {'phone_num':login})
+    result = cursor.execute(f'''SELECT (:login) FROM users ''', 
+                            {'login':login})
     
     if result.fetchone() is None:
         conn.commit()
@@ -74,13 +75,14 @@ def create_user_db(login):
 
     login = [int(login)]
 
-    cursor.execute( f''' CREATE TABLE IF NOT EXISTS {login} 
+    cursor.execute(''' CREATE TABLE IF NOT EXISTS (:login) 
                (id INTEGER PRIMARY KEY AUTOINCREMENT,
                home_name text,
                electricity text,
                water text,
                gas text,
-               heating text)''')
+               heating text)''',
+               {'login':login})
 
     conn.commit()
     cursor.close()
@@ -94,8 +96,8 @@ def add_new_home(login, name):
 
     login = [int(login)]
 
-    cursor.execute(f''' INSERT INTO {login} (home_name) VALUES (:home_name)''', 
-                   {'home_name': name})
+    cursor.execute(''' INSERT INTO (:login) (home_name) VALUES (:home_name)''', 
+                   {'home_name': name, 'login':login})
 
     conn.commit()
     cursor.close()
@@ -109,7 +111,8 @@ def get_home_names(login):
 
     login = [int(login)]
 
-    cursor.execute(f''' SELECT DISTINCT home_name from {login} ''')
+    cursor.execute(''' SELECT DISTINCT home_name from (:login) ''',
+                   {'login':login})
     home_names = cursor.fetchall()
 
     conn.commit()
@@ -125,21 +128,19 @@ def add_new_data(login, bill, home_name, data):
     conn = sqlite3.connect('data_for_bot.db')
     cursor = conn.cursor()
 
-    cursor.execute(f''' SELECT id FROM {login} 
-                    WHERE home_name = (:name_of_home) and {bill} is Null ''', 
-                    {'name_of_home':home_name})
+    cursor.execute(''' SELECT id FROM (:login) 
+                    WHERE home_name = (:name_of_home) and (:bill) is Null ''', 
+                    {'name_of_home':home_name, 'login':login, 'bill':bill})
     
     first_occurance = cursor.fetchone()
     if first_occurance is not None:
         first_occurance = first_occurance[0]
 
-        cursor.execute(f''' UPDATE {login} SET {bill} = (:value) 
-                       WHERE id = (:needed_id) ''', 
-                       {'value':data, 'needed_id':first_occurance})
+        cursor.execute(''' UPDATE (:login) SET (:bill) = (:value) WHERE id = (:needed_id) ''', 
+                       {'value':data, 'needed_id':first_occurance, 'login':login, 'bill':bill})
     else:
-        cursor.execute(f''' INSERT INTO {login} (home_name, {bill})
-                       VALUES (:name_of_home, :value)''', 
-                       {'name_of_home':home_name, 'value':data})
+        cursor.execute(''' INSERT INTO (:login) (home_name, (:bill)) VALUES (:name_of_home, :value)''', 
+                       {'name_of_home':home_name, 'value':data, 'login':login, 'bill':bill})
     
     conn.commit()
     cursor.close()
@@ -153,15 +154,16 @@ def change_last_data(login, bill, home_name, data):
     conn = sqlite3.connect('data_for_bot.db')
     cursor = conn.cursor()
 
-    cursor.execute(f''' SELECT id FROM {login} 
-                    WHERE home_name = (:name_of_home) and {bill} is not Null ''', {'name_of_home':home_name})
+    cursor.execute(''' SELECT id FROM (:login) 
+                    WHERE home_name = (:name_of_home) and (:bill) is not Null ''', 
+                    {'name_of_home':home_name, 'login':login, 'bill':bill})
     
     last_occurance = cursor.fetchall()
     if last_occurance != []:
         last_occurance = last_occurance[-1][0]
 
-        cursor.execute(f''' UPDATE {login} SET {bill} = (:value)
-                       WHERE id = (:needed_id) ''', {'value':data, 'needed_id':last_occurance})
+        cursor.execute(''' UPDATE (:login) SET (:bill) = (:value) WHERE id = (:needed_id) ''', 
+                       {'value':data, 'needed_id':last_occurance, 'login':login, 'bill':bill},)
     else:
         add_new_data(old_version_of_login, bill, home_name, data)
 
@@ -176,8 +178,9 @@ def get_data(login, bill, home_name):
     conn = sqlite3.connect('data_for_bot.db')
     cursor = conn.cursor()
 
-    cursor.execute(f''' SELECT {bill} FROM {login}  
-                    WHERE home_name = (:name_of_home) and {bill} is not Null ''', {'name_of_home':home_name})
+    cursor.execute(''' SELECT (:bill) FROM (:login)  
+                    WHERE home_name = (:name_of_home) and (:bill) is not Null ''', 
+                    {'name_of_home':home_name, 'bill':bill, 'login':login})
     
     last_occurance = cursor.fetchall()
     conn.commit()
@@ -210,9 +213,9 @@ def get_yearly_data(login, home_name, bill):
     conn = sqlite3.connect('data_for_bot.db')
     cursor = conn.cursor()
 
-    cursor.execute(f''' SELECT {bill} FROM {login} 
-                   WHERE home_name = (:name_of_home) 
-                   AND {bill} is not Null ''', {'name_of_home':home_name})
+    cursor.execute(''' SELECT (:bill) FROM (:login) WHERE home_name = (:name_of_home) 
+                   AND (:bill) is not Null ''', 
+                   {'name_of_home':home_name, 'bill':bill, 'login':login})
     twelve = cursor.fetchmany(12)
 
     conn.commit()
