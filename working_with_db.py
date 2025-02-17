@@ -2,6 +2,7 @@
 
 import sqlite3
 
+
 # создание таблицы пользователей (users)
 def create_users_table():
     conn = sqlite3.connect('data_for_bot.db')
@@ -11,6 +12,7 @@ def create_users_table():
     conn.commit()
     cursor.close()
     conn.close()
+
 
 # проверка того, используется ли данный логин,
 # то есть находится ли такой логин уже в таблице users
@@ -32,13 +34,14 @@ def is_login_in_use(login):
         conn.close()
         return True
 
+
 # получение правильного пароля из таблицы users
 def get_correct_password(login):
     conn = sqlite3.connect('data_for_bot.db')
     cursor = conn.cursor()
 
-    cursor.execute(''' SELECT password FROM users
-                            WHERE login = (:phone_num) ''', {'phone_num':login})
+    cursor.execute(''' SELECT password FROM users WHERE login = (:phone_num) ''', 
+                            {'phone_num':login})
     
     password = cursor.fetchone()
 
@@ -48,19 +51,20 @@ def get_correct_password(login):
 
     return password
     
+
 # регистрация пользователя, то есть добавление новых 
 # номера телефона (login) и пароля в таблицу users
 def register_user(login, password):
-    
     conn = sqlite3.connect('data_for_bot.db')
     cursor = conn.cursor()
 
-    cursor.execute(''' INSERT INTO users (login, password)
-                   VALUES (:log, :pswrd) ''', {'log':login, 'pswrd':password})
+    cursor.execute(''' INSERT INTO users (login, password) VALUES (:log, :pswrd) ''', 
+                   {'log':login, 'pswrd':password})
 
     conn.commit()
     cursor.close()
     conn.close()
+
 
 # создание собственной таблицы для каждого пользователя, 
 # где именем таблицы выступает уникальный номер телефона (он же login из таблицы users)
@@ -82,6 +86,7 @@ def create_user_db(login):
     cursor.close()
     conn.close()
 
+
 # добавление нового дома в таблицу пользователя
 def add_new_home(login, name):
     conn = sqlite3.connect('data_for_bot.db')
@@ -89,12 +94,13 @@ def add_new_home(login, name):
 
     login = [int(login)]
 
-    cursor.execute(f''' INSERT INTO {login} (home_name)
-                   VALUES (:home_name)''', {'home_name': name})
+    cursor.execute(f''' INSERT INTO {login} (home_name) VALUES (:home_name)''', 
+                   {'home_name': name})
 
     conn.commit()
     cursor.close()
     conn.close()
+
 
 # получение уникальных названий домов из таблицы пользователя
 def get_home_names(login):
@@ -112,6 +118,7 @@ def get_home_names(login):
 
     return home_names
 
+
 # добавление данных в таблицу пользователя по соответствующей услуге и для соответствующего дома
 def add_new_data(login, bill, home_name, data):
     login = [int(login)]
@@ -119,21 +126,25 @@ def add_new_data(login, bill, home_name, data):
     cursor = conn.cursor()
 
     cursor.execute(f''' SELECT id FROM {login} 
-                    WHERE home_name = (:name_of_home) and {bill} is Null ''', {'name_of_home':home_name})
+                    WHERE home_name = (:name_of_home) and {bill} is Null ''', 
+                    {'name_of_home':home_name})
     
     first_occurance = cursor.fetchone()
     if first_occurance is not None:
         first_occurance = first_occurance[0]
 
         cursor.execute(f''' UPDATE {login} SET {bill} = (:value) 
-                       WHERE id = (:needed_id) ''', {'value':data, 'needed_id':first_occurance})
+                       WHERE id = (:needed_id) ''', 
+                       {'value':data, 'needed_id':first_occurance})
     else:
         cursor.execute(f''' INSERT INTO {login} (home_name, {bill})
-                       VALUES (:name_of_home, :value)''', {'name_of_home':home_name, 'value':data})
+                       VALUES (:name_of_home, :value)''', 
+                       {'name_of_home':home_name, 'value':data})
     
     conn.commit()
     cursor.close()
     conn.close()
+
 
 # изменение последней записи в таблице пользователя по соответствующей услуге и для соответствующего дома
 def change_last_data(login, bill, home_name, data):
@@ -158,6 +169,7 @@ def change_last_data(login, bill, home_name, data):
     cursor.close()
     conn.close()
 
+
 # получение данных из таблицы пользователя по конкретной услуге для соответствующего дома
 def get_data(login, bill, home_name):
     login = [int(login)]
@@ -171,11 +183,13 @@ def get_data(login, bill, home_name):
     conn.commit()
     cursor.close()
     conn.close()
+
     if last_occurance != []:
         last_occurance = last_occurance[-1][0]
         return last_occurance
     else:
         return None
+
 
 # получение последних данных по всем услугам из таблицы пользователя, для соответствующего дома
 def get_last_bills_data(login, home_name):
@@ -187,6 +201,7 @@ def get_last_bills_data(login, home_name):
         last.append(data)
 
     return last
+
 
 # получение двенадцати (включительно или меньше) последних записей по всем услугам
 # из таблицы пользователя по соответствующему дому
