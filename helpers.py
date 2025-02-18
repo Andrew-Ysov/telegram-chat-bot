@@ -55,7 +55,7 @@ def get_list_of_homes(login):
 # получение двенадцати (включительно) или всех, если количество записей меньше двенадцати,
 # последних данных по каждой из услуг
 def yearly_data(login, home_name): 
-    data =[]
+    data = []
     bills = ['electricity', 'water', 'gas', 'heating']
 
     for bill in bills:
