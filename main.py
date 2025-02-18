@@ -21,8 +21,8 @@ service = ''
 def help(message):
     about_me = ''' Бот создан для того, чтобы хранить данные по комунальным счетам.
 Перед использованием бота в нём нужно зарегистрироваться или войти в аккаунт. \n
-Касательно функционала: в боте можно хранить и вносить данные по счетам за воду, электричество, газ, 
-отопление, также можно изменять уже введённые данные, если в них была ошибка. \n
+Касательно функционала: в боте можно хранить и вносить данные по счетам за воду, 
+электричество, газ, отопление, также можно изменять уже введённые данные, если в них была ошибка. \n
 Для безопасности пользователей при вводе пароля он сразу хэшируется. '''
     
     bot.send_message(message.chat.id, about_me)
@@ -37,17 +37,17 @@ def start(message):
 
     markup = types.InlineKeyboardMarkup()
 
-    check_in = types.InlineKeyboardButton('вход', callback_data= 'check_in')
-    registration = types.InlineKeyboardButton('регистрация', callback_data= 'registration')
+    check_in = types.InlineKeyboardButton('вход', callback_data='check_in')
+    registration = types.InlineKeyboardButton('регистрация', callback_data='registration')
 
     markup.add(check_in, registration)
 
-    bot.send_message(message.chat.id, 'Войдите в аккаунт или зарегистрируйтесь', reply_markup= markup)
+    bot.send_message(message.chat.id, 'Войдите в аккаунт или зарегистрируйтесь', reply_markup=markup)
 
 
 # функция для обработки всех появляющихся кнопок,
 # в зависимости от кнопки вызывется определённая функция
-@bot.callback_query_handler(func= lambda callback: True)
+@bot.callback_query_handler(func=lambda callback: True)
 def buttons(callback):
     global login
     global home_name
@@ -56,22 +56,22 @@ def buttons(callback):
     # получение номера телефона от пользователя для регистрации
     if callback.data == 'registration':
         bot.send_message(callback.message.chat.id, 
-                     '''введите номер телефона, например:\n (79591234567 или 7 959 123 45 67)''')
+                     'введите номер телефона, например:\n (79591234567 или 7 959 123 45 67)')
         bot.register_next_step_handler(callback.message, registration)
         
     # получение номера телефона от пользователя для входа в аккаунт 
     elif callback.data == 'check_in':
         bot.send_message(callback.message.chat.id, 
-                     '''введите номер телефона, например:\n (79591234567 или 7 959 123 45 67)''')
+                     'введите номер телефона, например:\n (79591234567 или 7 959 123 45 67)')
         bot.register_next_step_handler(callback.message, check_in)
     
     # обработка кнопки выбора дома из списка существующих
-    elif callback.data.split()[0]== 'choose':
+    elif callback.data.split()[0] == 'choose':
         login = callback.data.split()[1]
         choose_home(callback.message, login)
 
     # обработка кнопки 'создание нового'
-    elif callback.data.split()[0]== 'create':
+    elif callback.data.split()[0] == 'create':
         login = callback.data.split()[1]
         bot.send_message(callback.message.chat.id, 'дайте уникальное название новому жилью')
         bot.register_next_step_handler(callback.message, create_new_home, login)
@@ -106,7 +106,8 @@ def buttons(callback):
             choosing_service(callback.message, service, bill, login, home_name)
         else:
             bot.send_message(callback.message.chat.id, f'введите показания счётчика')
-            bot.register_next_step_handler(callback.message, choosing_service, service, bill, login, home_name)
+            bot.register_next_step_handler(callback.message, choosing_service, 
+                                           service, bill, login, home_name)
 
 
 # регистрация, после получения номера телефона, проверка правильности номера
@@ -147,7 +148,8 @@ def check_in(message):
     login = ''.join(login.split())
 
     if not is_valid_login(login, False):
-        bot.send_message(message.chat.id, 'такой номер телефона не используется, зарегистрируйтесь или введите правильный номер')
+        bot.send_message(message.chat.id, ('такой номер телефона не используется, ' 
+                                           'зарегистрируйтесь или введите правильный номер'))
         start(message)
     else:
         bot.send_message(message.chat.id, 'введите пароль')
@@ -163,11 +165,11 @@ def autentification(message, login):
 
         markup = types.InlineKeyboardMarkup()
 
-        choose_home_btn = types.InlineKeyboardButton('выбрать дом', callback_data= f'choose {login}')
-        create_home_btn = types.InlineKeyboardButton('создать ещё один дом', callback_data= f'create {login}')
+        choose_home_btn = types.InlineKeyboardButton('выбрать дом', callback_data=f'choose {login}')
+        create_home_btn = types.InlineKeyboardButton('создать ещё один дом', callback_data=f'create {login}')
 
         markup.row(choose_home_btn, create_home_btn)
-        bot.send_message(message.chat.id, 'что вы будете делать дальше?', reply_markup= markup)
+        bot.send_message(message.chat.id, 'что вы будете делать дальше?', reply_markup=markup)
     else:
         bot.send_message(message.chat.id, 'пароль не верный, проверьте пароль и введите правильный')
         bot.register_next_step_handler(message, autentification, login)
@@ -189,11 +191,11 @@ def create_new_home(message, login):
 
         markup = types.InlineKeyboardMarkup()
 
-        choose_home_btn = types.InlineKeyboardButton('выбрать дом', callback_data= f'choose {login}')
-        create_home_btn = types.InlineKeyboardButton('создать ещё один дом', callback_data= f'create {login}')
+        choose_home_btn = types.InlineKeyboardButton('выбрать дом', callback_data=f'choose {login}')
+        create_home_btn = types.InlineKeyboardButton('создать ещё один дом', callback_data=f'create {login}')
 
         markup.row(choose_home_btn, create_home_btn)
-        bot.send_message(message.chat.id, 'что вы будете делать дальше?', reply_markup= markup)
+        bot.send_message(message.chat.id, 'что вы будете делать дальше?', reply_markup=markup)
     
 
 # выбор дома из списка доступных в базе данных
@@ -203,10 +205,10 @@ def choose_home(message, login):
     markup = types.InlineKeyboardMarkup()
 
     for home in homes:
-        button = types.InlineKeyboardButton(home, callback_data= home)
-        markup.add(button, row_width= 1)
+        button = types.InlineKeyboardButton(home, callback_data=home)
+        markup.add(button, row_width=1)
 
-    bot.send_message(message.chat.id, 'Выберите нужное жилье', reply_markup= markup)
+    bot.send_message(message.chat.id, 'Выберите нужное жилье', reply_markup=markup)
 
 
 # главное меню
@@ -214,18 +216,22 @@ def choose_home(message, login):
 def main_menu (message):
     markup = types.InlineKeyboardMarkup()
 
-    get_all_bills_btn = types.InlineKeyboardButton('Просмотреть последние показания\n всех счётчиков', callback_data= 'получить последние счета')
-    get_bill_btn = types.InlineKeyboardButton('Просмотреть последние\n показания счётчика', callback_data= 'получить счёт')
-    get_bills_for_year_btn = types.InlineKeyboardButton('Получить показания счётчиков, переданные за год', callback_data= 'получить счета за год')
+    get_all_bills_btn = types.InlineKeyboardButton('Просмотреть последние показания\n всех счётчиков', 
+                                                   callback_data='получить последние счета')
+    get_bill_btn = types.InlineKeyboardButton('Просмотреть последние\n показания счётчика', 
+                                              callback_data='получить счёт')
+    get_bills_for_year_btn = types.InlineKeyboardButton('Получить показания счётчиков, переданные за год', 
+                                                        callback_data='получить счета за год')
+    set_data_to_bill_btn = types.InlineKeyboardButton('Передать показания счётчика', 
+                                                      callback_data='добавить счёт')
+    change_bill_btn = types.InlineKeyboardButton('Изменить последние\n показания счётчика', 
+                                                 callback_data='изменить счёт')
 
-    set_data_to_bill_btn = types.InlineKeyboardButton('Передать показания счётчика', callback_data= 'добавить счёт')
-    change_bill_btn = types.InlineKeyboardButton('Изменить последние\n показания счётчика', callback_data= 'изменить счёт')
+    markup.add(get_bill_btn, get_all_bills_btn, row_width=1)
+    markup.add(set_data_to_bill_btn, change_bill_btn, row_width=1)
+    markup.add(get_bills_for_year_btn, row_width=1)
 
-    markup.add(get_bill_btn, get_all_bills_btn, row_width= 1)
-    markup.add(set_data_to_bill_btn, change_bill_btn, row_width= 1)
-    markup.add(get_bills_for_year_btn, row_width= 1)
-
-    bot.send_message(message.chat.id, 'выберите, что хотите сделать дальше', reply_markup= markup)
+    bot.send_message(message.chat.id, 'выберите, что хотите сделать дальше', reply_markup=markup)
 
 
 # выбор того, какую услугу пользователь хочет выбрать, 
@@ -238,10 +244,10 @@ def choose_bill(message):
     markup = types.InlineKeyboardMarkup()
 
     for bill, rus_bill in zip(bills, rus_bills):
-        button = types.InlineKeyboardButton(rus_bill, callback_data= bill)
+        button = types.InlineKeyboardButton(rus_bill, callback_data=bill)
         markup.add(button)
 
-    bot.send_message(message.chat.id, 'выберите услугу', reply_markup= markup)
+    bot.send_message(message.chat.id, 'выберите услугу', reply_markup=markup)
 
 
 # после выбора услуги вызывется соответствующая функция
