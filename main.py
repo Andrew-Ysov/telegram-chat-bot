@@ -70,7 +70,7 @@ def buttons(callback):
         login = callback.data.split()[1]
         choose_home(callback.message, login)
 
-    # обработка кнопки "создание нового
+    # обработка кнопки 'создание нового'
     elif callback.data.split()[0]== 'create':
         login = callback.data.split()[1]
         bot.send_message(callback.message.chat.id, 'дайте уникальное название новому жилью')
