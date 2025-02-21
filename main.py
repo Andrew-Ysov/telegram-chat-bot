@@ -265,7 +265,7 @@ def choosing_service(message, service, bill, login, home_name):
 # получение счёта по конкретной услуге
 def get_bill(message, login, bill, home_name):
     data = get_data(login, bill, home_name)
-    if data == None:
+    if data is None:
         data = 'отсутствует'
     bot.send_message(message.chat.id, f'последний показания по счётчику такие: {data}')
     main_menu(message)
@@ -278,7 +278,7 @@ def get_all_bills(message, login, home_name):
     rus_bills = ['электричество', 'воду', 'газ', 'отопление']
     
     for bill, data in zip(rus_bills, bills_data):
-        if data == None:
+        if data is None:
             data = 'отсутствует'
         bot.send_message(message.chat.id, f'счёт за {bill}: {data}')
     main_menu(message)
