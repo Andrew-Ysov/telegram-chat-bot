@@ -12,7 +12,7 @@ from token import token
 bot = telebot.TeleBot(token)
 login = ''
 home_name = ''
-service = ''
+action = ''
 
 
 # реакция на команду /help
@@ -51,7 +51,7 @@ def start(message):
 def buttons(callback):
     global login
     global home_name
-    global service
+    global action
     
     # получение номера телефона от пользователя для регистрации
     if callback.data == 'registration':
@@ -89,25 +89,25 @@ def buttons(callback):
     elif callback.data == 'получить счета за год':
         get_service_bills_for_year(callback.message, login, home_name)
     elif callback.data == 'получить счёт':
-        service = callback.data
+        action = callback.data
         choose_service(callback.message)
     elif callback.data == 'добавить счёт':
-        service = callback.data
+        action = callback.data
         choose_service(callback.message)
     elif callback.data == 'изменить счёт':
-        service = callback.data
+        action = callback.data
         choose_service(callback.message)
 
     # обработка кнопок выбора услуг пользователем
     elif callback.data in ['electricity', 'water', 'gas', 'heating']:
 
         bill = callback.data
-        if service == 'получить счёт':
-            choosing_service(callback.message, service, bill, login, home_name)
+        if action == 'получить счёт':
+            choosing_action(callback.message, action, bill, login, home_name)
         else:
             bot.send_message(callback.message.chat.id, f'введите показания счётчика')
-            bot.register_next_step_handler(callback.message, choosing_service, 
-                                           service, bill, login, home_name)
+            bot.register_next_step_handler(callback.message, choosing_action, 
+                                           action, bill, login, home_name)
 
 
 # регистрация, после получения номера телефона, проверка правильности номера
@@ -251,14 +251,14 @@ def choose_service(message):
 
 
 # после выбора услуги вызывется соответствующая функция
-def choosing_service(message, service, bill, login, home_name):
+def choosing_action(message, action, bill, login, home_name):
     data = message.text.strip()
 
-    if service == 'получить счёт':
+    if action == 'получить счёт':
         get_bill(message, login, bill, home_name)
-    elif service == 'добавить счёт':
+    elif action == 'добавить счёт':
         set_data_to_bill(message, login, bill, home_name, data)
-    elif service == 'изменить счёт':
+    elif action == 'изменить счёт':
         change_bill(message, login, bill, home_name, data)
 
 
