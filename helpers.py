@@ -1,3 +1,5 @@
+"""Additional functions."""
+
 import hashlib
 
 from working_with_db import is_login_in_use, get_home_names, get_correct_password, get_yearly_data
