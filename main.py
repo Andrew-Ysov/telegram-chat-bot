@@ -1,7 +1,7 @@
 import telebot  
 from telebot import types
 
-from working_with_db import *
+import working_with_db as db
 from helpers import *
 from token import token
 
@@ -29,7 +29,7 @@ def help(message):
 def start(message):
     """starts the bot, displays bottons 'вход', 'регистрация', initializes database."""
 
-    create_users_table()
+    db.create_users_table()
 
     markup = types.InlineKeyboardMarkup()
 
@@ -125,9 +125,9 @@ def get_password(message, login):
     """make hash of password for future use."""
     hash_password = hashing(message.text.strip())
     
-    register_user(login, hash_password)
+    db.register_user(login, hash_password)
     
-    create_user_data_table(login)
+    db.create_user_data_table(login)
 
     bot.send_message(message.chat.id, 'вы зарегистрированы')
     bot.send_message(message.chat.id, 'теперь нужно дать название жилью, о котором будут храниться данные')
@@ -175,7 +175,7 @@ def create_new_home(message, login):
         bot.register_next_step_handler(message, create_new_home, login)
 
     else:
-        add_new_home(login, home_name)
+        db.add_new_home(login, home_name)
 
         bot.send_message(message.chat.id, 'новый дом добавлен')
 
@@ -247,7 +247,7 @@ def choosing_action(message, action, service, login, home_name):
 
 
 def get_bill(message, login, service, home_name):
-    data = get_data(login, service, home_name)
+    data = db.get_data(login, service, home_name)
     if data is None:
         data = 'отсутствует'
     bot.send_message(message.chat.id, f'последний показания по счётчику такие: {data}')
@@ -278,13 +278,13 @@ def get_service_bills_for_year(message, login, home_name):
 
 
 def set_bill_data_to_service(message, login, service, home_name, data):
-    add_new_data(login, service, home_name, data)
+    db.add_new_data(login, service, home_name, data)
     bot.send_message(message.chat.id, 'показания счётчика были добавлены')
     main_menu(message)
 
 
 def change_last_bill(message, login, service, home_name, data):
-    change_last_data(login, service, home_name, data)
+    db.change_last_data(login, service, home_name, data)
     bot.send_message(message.chat.id, 'показания счётчика были изменены')
     main_menu(message)
 
