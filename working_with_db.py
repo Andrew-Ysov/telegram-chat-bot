@@ -117,64 +117,64 @@ def get_home_names(login):
     return home_names
 
 
-def add_new_data(login, bill, home_name, data):
-    """save data for bill servicr for a specific home_name."""
+def add_new_data(login, service, home_name, data):
+    """save bill's data for service, for a specific home_name."""
     login = [int(login)]
     conn = sqlite3.connect('data_for_bot.db')
     cursor = conn.cursor()
 
     cursor.execute(''' SELECT id FROM (:login) 
-                    WHERE home_name = (:name_of_home) and (:bill) is Null ''', 
-                    {'name_of_home':home_name, 'login':login, 'bill':bill})
+                    WHERE home_name = (:name_of_home) and (:service) is Null ''', 
+                    {'name_of_home':home_name, 'login':login, 'service':service})
     
     first_occurance = cursor.fetchone()
     if first_occurance is not None:
         first_occurance = first_occurance[0]
 
-        cursor.execute(''' UPDATE (:login) SET (:bill) = (:value) WHERE id = (:needed_id) ''', 
-                       {'value':data, 'needed_id':first_occurance, 'login':login, 'bill':bill})
+        cursor.execute(''' UPDATE (:login) SET (:service) = (:value) WHERE id = (:needed_id) ''', 
+                       {'value':data, 'needed_id':first_occurance, 'login':login, 'service':service})
     else:
-        cursor.execute(''' INSERT INTO (:login) (home_name, (:bill)) VALUES (:name_of_home, :value)''', 
-                       {'name_of_home':home_name, 'value':data, 'login':login, 'bill':bill})
+        cursor.execute(''' INSERT INTO (:login) (home_name, (:service)) VALUES (:name_of_home, :value)''', 
+                       {'name_of_home':home_name, 'value':data, 'login':login, 'service':service})
     
     conn.commit()
     cursor.close()
     conn.close()
 
 
-def change_last_data(login, bill, home_name, data):
+def change_last_data(login, service, home_name, data):
     old_version_of_login = login
     login = [int(login)]
     conn = sqlite3.connect('data_for_bot.db')
     cursor = conn.cursor()
 
     cursor.execute(''' SELECT id FROM (:login) 
-                    WHERE home_name = (:name_of_home) and (:bill) is not Null ''', 
-                    {'name_of_home':home_name, 'login':login, 'bill':bill})
+                    WHERE home_name = (:name_of_home) and (:service) is not Null ''', 
+                    {'name_of_home':home_name, 'login':login, 'service':service})
     
     last_occurance = cursor.fetchall()
     if last_occurance != []:
         last_occurance = last_occurance[-1][0]
 
-        cursor.execute(''' UPDATE (:login) SET (:bill) = (:value) WHERE id = (:needed_id) ''', 
-                       {'value':data, 'needed_id':last_occurance, 'login':login, 'bill':bill},)
+        cursor.execute(''' UPDATE (:login) SET (:service) = (:value) WHERE id = (:needed_id) ''', 
+                       {'value':data, 'needed_id':last_occurance, 'login':login, 'service':service},)
     else:
-        add_new_data(old_version_of_login, bill, home_name, data)
+        add_new_data(old_version_of_login, service, home_name, data)
 
     conn.commit()
     cursor.close()
     conn.close()
 
 
-def get_data(login, bill, home_name):
+def get_data(login, service, home_name):
     """get all data for a service for a specific home."""
     login = [int(login)]
     conn = sqlite3.connect('data_for_bot.db')
     cursor = conn.cursor()
 
-    cursor.execute(''' SELECT (:bill) FROM (:login)  
-                    WHERE home_name = (:name_of_home) and (:bill) is not Null ''', 
-                    {'name_of_home':home_name, 'bill':bill, 'login':login})
+    cursor.execute(''' SELECT (:service) FROM (:login)  
+                    WHERE home_name = (:name_of_home) and (:service) is not Null ''', 
+                    {'name_of_home':home_name, 'service':service, 'login':login})
     
     last_occurance = cursor.fetchall()
     conn.commit()
@@ -188,26 +188,26 @@ def get_data(login, bill, home_name):
         return None
 
 
-def get_last_bills_data(login, home_name):
-    bills = ['electricity', 'water', 'gas', 'heating']
+def get_last_bills(login, home_name):
+    services = ['electricity', 'water', 'gas', 'heating']
     last = []
 
-    for bill in bills:
-        data = get_data(login, bill, home_name)
+    for service in services:
+        data = get_data(login, service, home_name)
         last.append(data)
 
     return last
 
 
-def get_yearly_data(login, home_name, bill):
+def get_yearly_data(login, home_name, service):
     """get last 12 row of data or get all data, if there's not enough rows."""
     login = [int(login)]
     conn = sqlite3.connect('data_for_bot.db')
     cursor = conn.cursor()
 
-    cursor.execute(''' SELECT (:bill) FROM (:login) WHERE home_name = (:name_of_home) 
-                   AND (:bill) is not Null ''', 
-                   {'name_of_home':home_name, 'bill':bill, 'login':login})
+    cursor.execute(''' SELECT (:service) FROM (:login) WHERE home_name = (:name_of_home) 
+                   AND (:service) is not Null ''', 
+                   {'name_of_home':home_name, 'service':service, 'login':login})
     twelve = cursor.fetchmany(12)
 
     conn.commit()

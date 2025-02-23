@@ -101,13 +101,13 @@ def buttons(callback):
     # обработка кнопок выбора услуг пользователем
     elif callback.data in ['electricity', 'water', 'gas', 'heating']:
 
-        bill = callback.data
+        service = callback.data
         if action == 'получить счёт':
-            choosing_action(callback.message, action, bill, login, home_name)
+            choosing_action(callback.message, action, service, login, home_name)
         else:
             bot.send_message(callback.message.chat.id, f'введите показания счётчика')
             bot.register_next_step_handler(callback.message, choosing_action, 
-                                           action, bill, login, home_name)
+                                           action, service, login, home_name)
 
 
 # регистрация, после получения номера телефона, проверка правильности номера
@@ -238,33 +238,33 @@ def main_menu (message):
 # поскольку услуга выбирается в нескольких функциях, то разные функции обращаются к этой функции, 
 # а также эта функция ведёт к нескольким другим 
 def choose_service(message):
-    bills = ['electricity', 'water', 'gas', 'heating']
-    rus_bills = ['электричество', 'вода', 'газ', 'отопление']
+    services = ['electricity', 'water', 'gas', 'heating']
+    rus_services = ['электричество', 'вода', 'газ', 'отопление']
 
     markup = types.InlineKeyboardMarkup()
 
-    for bill, rus_bill in zip(bills, rus_bills):
-        button = types.InlineKeyboardButton(rus_bill, callback_data=bill)
+    for service, rus_service in zip(services, rus_services):
+        button = types.InlineKeyboardButton(rus_service, callback_data=service)
         markup.add(button)
 
     bot.send_message(message.chat.id, 'выберите услугу', reply_markup=markup)
 
 
 # после выбора услуги вызывется соответствующая функция
-def choosing_action(message, action, bill, login, home_name):
+def choosing_action(message, action, service, login, home_name):
     data = message.text.strip()
 
     if action == 'получить счёт':
-        get_bill(message, login, bill, home_name)
+        get_bill(message, login, service, home_name)
     elif action == 'добавить счёт':
-        set_data_to_bill(message, login, bill, home_name, data)
+        set_data_to_service(message, login, service, home_name, data)
     elif action == 'изменить счёт':
-        change_bill(message, login, bill, home_name, data)
+        change_bill(message, login, service, home_name, data)
 
 
 # получение счёта по конкретной услуге
-def get_bill(message, login, bill, home_name):
-    data = get_data(login, bill, home_name)
+def get_bill(message, login, service, home_name):
+    data = get_data(login, service, home_name)
     if data is None:
         data = 'отсутствует'
     bot.send_message(message.chat.id, f'последний показания по счётчику такие: {data}')
@@ -274,38 +274,38 @@ def get_bill(message, login, bill, home_name):
 # получение последних счетов по всем услугам
 def get_all_bills(message, login, home_name):
     bot.send_message(message.chat.id, 'вот ваши последние показания по всем счётчикам: ')
-    bills_data = get_last_bills_data(login, home_name)
-    rus_bills = ['электричество', 'воду', 'газ', 'отопление']
+    bills_data = get_last_bills(login, home_name)
+    rus_services = ['электричество', 'воду', 'газ', 'отопление']
     
-    for bill, data in zip(rus_bills, bills_data):
+    for service, data in zip(rus_services, bills_data):
         if data is None:
             data = 'отсутствует'
-        bot.send_message(message.chat.id, f'счёт за {bill}: {data}')
+        bot.send_message(message.chat.id, f'счёт за {service}: {data}')
     main_menu(message)
 
 
 # получение всех имеющихся счетов (только двенадцать счетов включительно) по всем услугам 
 def get_service_bills_for_year(message, login, home_name):
     yearly_bills = yearly_data(login, home_name)
-    rus_bills = ['электричество', 'воду', 'газ', 'отопление']
+    rus_services = ['электричество', 'воду', 'газ', 'отопление']
 
-    for bill, data in zip(rus_bills, yearly_bills):
+    for service, data in zip(rus_services, yearly_bills):
         if data == []:
             data = 'отсутствует'
-        bot.send_message(message.chat.id, f'показания счётчика за {bill}: {data}')
+        bot.send_message(message.chat.id, f'показания счётчика за {service}: {data}')
     main_menu(message)
 
 
 # добавление данных по конкретному счёту
-def set_data_to_bill(message, login, bill, home_name, data):
-    add_new_data(login, bill, home_name, data)
+def set_data_to_service(message, login, service, home_name, data):
+    add_new_data(login, service, home_name, data)
     bot.send_message(message.chat.id, 'показания счётчика были добавлены')
     main_menu(message)
 
 
 # внесение изменений в последний счёт по конкретной услуге в случае ошибки пользователя
-def change_bill(message, login, bill, home_name, data):
-    change_last_data(login, bill, home_name, data)
+def change_bill(message, login, service, home_name, data):
+    change_last_data(login, service, home_name, data)
     bot.send_message(message.chat.id, 'показания счётчика были изменены')
     main_menu(message)
 
