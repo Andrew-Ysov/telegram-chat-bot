@@ -1,4 +1,4 @@
-"""Functions for working with database"""
+"""Functions for working with database."""
 
 import sqlite3
 

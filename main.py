@@ -6,19 +6,16 @@ from helpers import *
 from token import token
 
 
-# в переменной bot указан уникальный для каждого бота токен, 
-# его можно получить у @BotFather и использовать свой, тогда можно 
-# создать и оформить другого бота 
+"""variable bot is a unique token that you can from @BotFather."""
 bot = telebot.TeleBot(token)
 login = ''
 home_name = ''
 action = ''
 
 
-# реакция на команду /help
-# вывод сообщения, объясняющего, что делает бот и как им пользоваться
 @bot.message_handler(commands=['help'])
 def help(message):
+    """respond to help command, explains how bot works."""
     about_me = ''' Бот создан для того, чтобы хранить данные по комунальным счетам.
 Перед использованием бота в нём нужно зарегистрироваться или войти в аккаунт. \n
 Касательно функционала: в боте можно хранить и вносить данные по счетам за воду, 
@@ -28,10 +25,9 @@ def help(message):
     bot.send_message(message.chat.id, about_me)
 
 
-# запуск бота, реакция на команду /start
-# выводит две кнопки: вход и регистрация
 @bot.message_handler(commands=['start'])
 def start(message):
+    """starts the bot, displays bottons 'вход', 'регистрация', initializes database."""
 
     create_users_table()
 
@@ -45,47 +41,44 @@ def start(message):
     bot.send_message(message.chat.id, 'Войдите в аккаунт или зарегистрируйтесь', reply_markup=markup)
 
 
-# функция для обработки всех появляющихся кнопок,
-# в зависимости от кнопки вызывется определённая функция
 @bot.callback_query_handler(func=lambda callback: True)
 def buttons(callback):
+    """showing buttons and handling callback for them."""
     global login
     global home_name
     global action
     
-    # получение номера телефона от пользователя для регистрации
+    # get user's phone number to register him
     if callback.data == 'registration':
         bot.send_message(callback.message.chat.id, 
                      'введите номер телефона, например:\n (79591234567 или 7 959 123 45 67)')
         bot.register_next_step_handler(callback.message, registration)
         
-    # получение номера телефона от пользователя для входа в аккаунт 
+    # get user's phone number to check in
     elif callback.data == 'check_in':
         bot.send_message(callback.message.chat.id, 
                      'введите номер телефона, например:\n (79591234567 или 7 959 123 45 67)')
         bot.register_next_step_handler(callback.message, check_in)
     
-    # обработка кнопки выбора дома из списка существующих
+    # let user choose which home to work with
     elif callback.data.split()[0] == 'choose':
         login = callback.data.split()[1]
         choose_home(callback.message, login)
 
-    # обработка кнопки 'создание нового'
+    # button to create a new home
     elif callback.data.split()[0] == 'create':
         login = callback.data.split()[1]
         bot.send_message(callback.message.chat.id, 'дайте уникальное название новому жилью')
         bot.register_next_step_handler(callback.message, create_new_home, login)
     
-    # после выбора дома пользователем, 
-    # имя дома сохраняется в отдельной переменной для дальнейшего использования,
-    # пользователь переходит в главное меню
+    # handling buttons after user chooses home name
     elif callback.data in get_list_of_homes(login):
         home_name = callback.data 
         main_menu(callback.message)
              
-    # обработка кнопок выбора функция и действий пользователем
+    # handling buttons for action choice
     elif callback.data == 'получить последние счета':
-        get_all_bills(callback.message, login, home_name)  
+        get_last_bills(callback.message, login, home_name)  
     elif callback.data == 'получить счета за год':
         get_service_bills_for_year(callback.message, login, home_name)
     elif callback.data == 'получить счёт':
@@ -98,7 +91,7 @@ def buttons(callback):
         action = callback.data
         choose_service(callback.message)
 
-    # обработка кнопок выбора услуг пользователем
+    # handling buttons for service choice
     elif callback.data in ['electricity', 'water', 'gas', 'heating']:
 
         service = callback.data
@@ -110,9 +103,8 @@ def buttons(callback):
                                            action, service, login, home_name)
 
 
-# регистрация, после получения номера телефона, проверка правильности номера
-# получение пароля или отработка неправильного (уже занятого) номера телефона
 def registration(message):
+    """test if user login is valid, if so: get user password, else print a message."""
     global login
     login = message.text.strip()
     login = ''.join(login.split())
@@ -129,8 +121,8 @@ def registration(message):
         bot.register_next_step_handler(message, registration)
 
 
-# получение пароля, его хэширование
 def get_password(message, login):
+    """make hash of password for future use."""
     hash_password = hashing(message.text.strip())
     
     register_user(login, hash_password)
@@ -142,8 +134,8 @@ def get_password(message, login):
     bot.register_next_step_handler(message, create_new_home, login)
 
 
-# вход в аккаунт, идентификация пользователя, проверка правильности номера телефона
 def check_in(message):
+    """userr's identification with phone number."""
     login = message.text.strip()
     login = ''.join(login.split())
 
@@ -156,7 +148,6 @@ def check_in(message):
         bot.register_next_step_handler(message, autentification, login)
 
 
-# аутентификация (проверка правильности хэшированого пароля)
 def autentification(message, login):
     hash_password = hashing(message.text.strip())
 
@@ -175,9 +166,8 @@ def autentification(message, login):
         bot.register_next_step_handler(message, autentification, login)
 
 
-# создание в базе данных нового, уникального дома (жилья), о котором можно хранить данные
-# обработка случая, когда название уже используется пользователем
 def create_new_home(message, login):
+    """create new home, check if it's already in use."""
     home_name = message.text.strip()
 
     if home_name in get_list_of_homes(login):
@@ -198,7 +188,6 @@ def create_new_home(message, login):
         bot.send_message(message.chat.id, 'что вы будете делать дальше?', reply_markup=markup)
     
 
-# выбор дома из списка доступных в базе данных
 def choose_home(message, login):
     homes = get_list_of_homes(login)
 
@@ -211,12 +200,11 @@ def choose_home(message, login):
     bot.send_message(message.chat.id, 'Выберите нужное жилье', reply_markup=markup)
 
 
-# главное меню
-# выбор пользователем доступных функций и действий, которые можно выполнить, касательно этого дома
 def main_menu (message):
+    """Show buttons for future actions."""
     markup = types.InlineKeyboardMarkup()
 
-    get_all_bills_btn = types.InlineKeyboardButton('Просмотреть последние показания\n всех счётчиков', 
+    get_last_bills_btn = types.InlineKeyboardButton('Просмотреть последние показания\n всех счётчиков', 
                                                    callback_data='получить последние счета')
     get_bill_btn = types.InlineKeyboardButton('Просмотреть последние\n показания счётчика', 
                                               callback_data='получить счёт')
@@ -224,19 +212,16 @@ def main_menu (message):
                                                         callback_data='получить счета за год')
     set_data_to_bill_btn = types.InlineKeyboardButton('Передать показания счётчика', 
                                                       callback_data='добавить счёт')
-    change_bill_btn = types.InlineKeyboardButton('Изменить последние\n показания счётчика', 
+    change_last_bill_btn = types.InlineKeyboardButton('Изменить последние\n показания счётчика', 
                                                  callback_data='изменить счёт')
 
-    markup.add(get_bill_btn, get_all_bills_btn, row_width=1)
-    markup.add(set_data_to_bill_btn, change_bill_btn, row_width=1)
+    markup.add(get_bill_btn, get_last_bills_btn, row_width=1)
+    markup.add(set_data_to_bill_btn, change_last_bill_btn, row_width=1)
     markup.add(get_service_bills_for_year_btn, row_width=1)
 
     bot.send_message(message.chat.id, 'выберите, что хотите сделать дальше', reply_markup=markup)
 
 
-# выбор того, какую услугу пользователь хочет выбрать, 
-# поскольку услуга выбирается в нескольких функциях, то разные функции обращаются к этой функции, 
-# а также эта функция ведёт к нескольким другим 
 def choose_service(message):
     services = ['electricity', 'water', 'gas', 'heating']
     rus_services = ['электричество', 'вода', 'газ', 'отопление']
@@ -250,19 +235,17 @@ def choose_service(message):
     bot.send_message(message.chat.id, 'выберите услугу', reply_markup=markup)
 
 
-# после выбора услуги вызывется соответствующая функция
 def choosing_action(message, action, service, login, home_name):
     data = message.text.strip()
 
     if action == 'получить счёт':
         get_bill(message, login, service, home_name)
     elif action == 'добавить счёт':
-        set_data_to_service(message, login, service, home_name, data)
+        set_bill_data_to_service(message, login, service, home_name, data)
     elif action == 'изменить счёт':
-        change_bill(message, login, service, home_name, data)
+        change_last_bill(message, login, service, home_name, data)
 
 
-# получение счёта по конкретной услуге
 def get_bill(message, login, service, home_name):
     data = get_data(login, service, home_name)
     if data is None:
@@ -271,8 +254,7 @@ def get_bill(message, login, service, home_name):
     main_menu(message)
 
 
-# получение последних счетов по всем услугам
-def get_all_bills(message, login, home_name):
+def get_last_bills(message, login, home_name):
     bot.send_message(message.chat.id, 'вот ваши последние показания по всем счётчикам: ')
     bills_data = get_last_bills(login, home_name)
     rus_services = ['электричество', 'воду', 'газ', 'отопление']
@@ -284,7 +266,6 @@ def get_all_bills(message, login, home_name):
     main_menu(message)
 
 
-# получение всех имеющихся счетов (только двенадцать счетов включительно) по всем услугам 
 def get_service_bills_for_year(message, login, home_name):
     yearly_bills = yearly_data(login, home_name)
     rus_services = ['электричество', 'воду', 'газ', 'отопление']
@@ -296,15 +277,13 @@ def get_service_bills_for_year(message, login, home_name):
     main_menu(message)
 
 
-# добавление данных по конкретному счёту
-def set_data_to_service(message, login, service, home_name, data):
+def set_bill_data_to_service(message, login, service, home_name, data):
     add_new_data(login, service, home_name, data)
     bot.send_message(message.chat.id, 'показания счётчика были добавлены')
     main_menu(message)
 
 
-# внесение изменений в последний счёт по конкретной услуге в случае ошибки пользователя
-def change_bill(message, login, service, home_name, data):
+def change_last_bill(message, login, service, home_name, data):
     change_last_data(login, service, home_name, data)
     bot.send_message(message.chat.id, 'показания счётчика были изменены')
     main_menu(message)
