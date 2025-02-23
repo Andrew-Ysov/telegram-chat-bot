@@ -43,7 +43,7 @@ def start(message):
 
 @bot.callback_query_handler(func=lambda callback: True)
 def buttons(callback):
-    """showing buttons and handling callback for them."""
+    """showing buttons and handling callback for them. Uses global variables login, home_name, action."""
     global login
     global home_name
     global action
@@ -104,7 +104,7 @@ def buttons(callback):
 
 
 def registration(message):
-    """test if user login is valid, if so: get user password, else print a message."""
+    """test if user login is valid, if so: get user password, else print a message. Uses global variable login"""
     global login
     login = message.text.strip()
     login = ''.join(login.split())
