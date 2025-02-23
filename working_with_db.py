@@ -1,9 +1,8 @@
-# файл, созданный строго для работы с БД и для всех обращений к ней
+"""Functions for working with database"""
 
 import sqlite3
 
 
-# создание таблицы пользователей (users)
 def create_users_table():
     conn = sqlite3.connect('data_for_bot.db')
     cursor = conn.cursor()
@@ -15,8 +14,6 @@ def create_users_table():
     conn.close()
 
 
-# проверка того, используется ли данный логин,
-# то есть находится ли такой логин уже в таблице users
 def is_login_in_use(login):
     conn = sqlite3.connect('data_for_bot.db')
     cursor = conn.cursor()
@@ -36,8 +33,8 @@ def is_login_in_use(login):
         return True
 
 
-# получение правильного пароля из таблицы users
 def get_correct_password(login):
+    """get correct password from table users."""
     conn = sqlite3.connect('data_for_bot.db')
     cursor = conn.cursor()
 
@@ -53,9 +50,8 @@ def get_correct_password(login):
     return password
     
 
-# регистрация пользователя, то есть добавление новых 
-# номера телефона (login) и пароля в таблицу users
 def register_user(login, password):
+    """save phone number (login) and password of a new user."""
     conn = sqlite3.connect('data_for_bot.db')
     cursor = conn.cursor()
 
@@ -67,9 +63,8 @@ def register_user(login, password):
     conn.close()
 
 
-# создание собственной таблицы для каждого пользователя, 
-# где именем таблицы выступает уникальный номер телефона (он же login из таблицы users)
 def create_user_db(login):
+    """create a seperate table for every user."""
     conn = sqlite3.connect('data_for_bot.db')
     cursor = conn.cursor()
 
@@ -89,8 +84,8 @@ def create_user_db(login):
     conn.close()
 
 
-# добавление нового дома в таблицу пользователя
 def add_new_home(login, name):
+    """save new address or home name for a user."""
     conn = sqlite3.connect('data_for_bot.db')
     cursor = conn.cursor()
 
@@ -104,8 +99,8 @@ def add_new_home(login, name):
     conn.close()
 
 
-# получение уникальных названий домов из таблицы пользователя
 def get_home_names(login):
+    """get user's addresses or home names."""
     conn = sqlite3.connect('data_for_bot.db')
     cursor = conn.cursor()
 
@@ -122,8 +117,8 @@ def get_home_names(login):
     return home_names
 
 
-# добавление данных в таблицу пользователя по соответствующей услуге и для соответствующего дома
 def add_new_data(login, bill, home_name, data):
+    """save data for bill servicr for a specific home_name."""
     login = [int(login)]
     conn = sqlite3.connect('data_for_bot.db')
     cursor = conn.cursor()
@@ -147,7 +142,6 @@ def add_new_data(login, bill, home_name, data):
     conn.close()
 
 
-# изменение последней записи в таблице пользователя по соответствующей услуге и для соответствующего дома
 def change_last_data(login, bill, home_name, data):
     old_version_of_login = login
     login = [int(login)]
@@ -172,8 +166,8 @@ def change_last_data(login, bill, home_name, data):
     conn.close()
 
 
-# получение данных из таблицы пользователя по конкретной услуге для соответствующего дома
 def get_data(login, bill, home_name):
+    """get all data for a service for a specific home."""
     login = [int(login)]
     conn = sqlite3.connect('data_for_bot.db')
     cursor = conn.cursor()
@@ -194,7 +188,6 @@ def get_data(login, bill, home_name):
         return None
 
 
-# получение последних данных по всем услугам из таблицы пользователя, для соответствующего дома
 def get_last_bills_data(login, home_name):
     bills = ['electricity', 'water', 'gas', 'heating']
     last = []
@@ -206,9 +199,8 @@ def get_last_bills_data(login, home_name):
     return last
 
 
-# получение двенадцати (включительно или меньше) последних записей по всем услугам
-# из таблицы пользователя по соответствующему дому
 def get_yearly_data(login, home_name, bill):
+    """get last 12 row of data or get all data, if there's not enough rows."""
     login = [int(login)]
     conn = sqlite3.connect('data_for_bot.db')
     cursor = conn.cursor()
