@@ -3,7 +3,6 @@ import hashlib
 from working_with_db import is_login_in_use, get_home_names, get_correct_password, get_yearly_data
 
 
-# проверка правильности логина
 def is_valid_login(login, registration):
     if len(login) != 11:
         return False
@@ -25,14 +24,13 @@ def is_valid_login(login, registration):
         return True
 
 
-# хэширование пароля
 def hashing(password):
     hashed = hashlib.sha256(password.encode()).hexdigest()
     return hashed
 
 
-# проверка правильности пароля, сравнение введённого (и хэшированного) пароля с паролем в бд
 def is_password_correct(login, attempted_password):
+    """compare correct password with attempted one."""
     correct_password = get_correct_password(login)[0]
 
     if correct_password == attempted_password:
@@ -41,7 +39,6 @@ def is_password_correct(login, attempted_password):
         return False
 
 
-# получение списка домов пользователя
 def get_list_of_homes(login):
     homes = get_home_names(login)
     names = []
@@ -52,14 +49,13 @@ def get_list_of_homes(login):
     return names
 
 
-# получение двенадцати (включительно) или всех, если количество записей меньше двенадцати,
-# последних данных по каждой из услуг
 def yearly_data(login, home_name): 
+    """get yearly data for every service."""
     data = []
-    bills = ['electricity', 'water', 'gas', 'heating']
+    services = ['electricity', 'water', 'gas', 'heating']
 
-    for bill in bills:
-        yearly_bill_data = get_yearly_data(login, home_name, bill)
+    for service in services:
+        yearly_bill_data = get_yearly_data(login, home_name, service)
         data.append(yearly_bill_data)
     
     return data
