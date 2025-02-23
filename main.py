@@ -87,16 +87,16 @@ def buttons(callback):
     elif callback.data == 'получить последние счета':
         get_all_bills(callback.message, login, home_name)  
     elif callback.data == 'получить счета за год':
-        get_bills_for_year(callback.message, login, home_name)
+        get_service_bills_for_year(callback.message, login, home_name)
     elif callback.data == 'получить счёт':
         service = callback.data
-        choose_bill(callback.message)
+        choose_service(callback.message)
     elif callback.data == 'добавить счёт':
         service = callback.data
-        choose_bill(callback.message)
+        choose_service(callback.message)
     elif callback.data == 'изменить счёт':
         service = callback.data
-        choose_bill(callback.message)
+        choose_service(callback.message)
 
     # обработка кнопок выбора услуг пользователем
     elif callback.data in ['electricity', 'water', 'gas', 'heating']:
@@ -220,7 +220,7 @@ def main_menu (message):
                                                    callback_data='получить последние счета')
     get_bill_btn = types.InlineKeyboardButton('Просмотреть последние\n показания счётчика', 
                                               callback_data='получить счёт')
-    get_bills_for_year_btn = types.InlineKeyboardButton('Получить показания счётчиков, переданные за год', 
+    get_service_bills_for_year_btn = types.InlineKeyboardButton('Получить показания счётчиков, переданные за год', 
                                                         callback_data='получить счета за год')
     set_data_to_bill_btn = types.InlineKeyboardButton('Передать показания счётчика', 
                                                       callback_data='добавить счёт')
@@ -229,7 +229,7 @@ def main_menu (message):
 
     markup.add(get_bill_btn, get_all_bills_btn, row_width=1)
     markup.add(set_data_to_bill_btn, change_bill_btn, row_width=1)
-    markup.add(get_bills_for_year_btn, row_width=1)
+    markup.add(get_service_bills_for_year_btn, row_width=1)
 
     bot.send_message(message.chat.id, 'выберите, что хотите сделать дальше', reply_markup=markup)
 
@@ -237,7 +237,7 @@ def main_menu (message):
 # выбор того, какую услугу пользователь хочет выбрать, 
 # поскольку услуга выбирается в нескольких функциях, то разные функции обращаются к этой функции, 
 # а также эта функция ведёт к нескольким другим 
-def choose_bill(message):
+def choose_service(message):
     bills = ['electricity', 'water', 'gas', 'heating']
     rus_bills = ['электричество', 'вода', 'газ', 'отопление']
 
@@ -285,7 +285,7 @@ def get_all_bills(message, login, home_name):
 
 
 # получение всех имеющихся счетов (только двенадцать счетов включительно) по всем услугам 
-def get_bills_for_year(message, login, home_name):
+def get_service_bills_for_year(message, login, home_name):
     yearly_bills = yearly_data(login, home_name)
     rus_bills = ['электричество', 'воду', 'газ', 'отопление']
 
