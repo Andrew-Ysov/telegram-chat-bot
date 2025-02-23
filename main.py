@@ -135,7 +135,7 @@ def get_password(message, login):
     
     register_user(login, hash_password)
     
-    create_user_db(login)
+    create_user_data_table(login)
 
     bot.send_message(message.chat.id, 'вы зарегистрированы')
     bot.send_message(message.chat.id, 'теперь нужно дать название жилью, о котором будут храниться данные')

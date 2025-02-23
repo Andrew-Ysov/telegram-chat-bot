@@ -63,7 +63,7 @@ def register_user(login, password):
     conn.close()
 
 
-def create_user_db(login):
+def create_user_data_table(login):
     """create a seperate table for every user."""
     conn = sqlite3.connect('data_for_bot.db')
     cursor = conn.cursor()
